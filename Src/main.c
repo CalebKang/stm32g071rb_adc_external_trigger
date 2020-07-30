@@ -199,31 +199,34 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 		}
 		else
 		{
-			if(aADCxConvertedData[0] < 3400)
+			if(ADC_TRIGGER == SOFT_TRIGGER)
 			{
-				CLL_OCP_FLAG = RESET;
-
-				//goto exti trigger				
-				HAL_ADC_Stop_DMA(&hadc1);
-				hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIG_EXT_IT11;
-				hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_FALLING;
-				if (HAL_ADC_Init(&hadc1) != HAL_OK)
+				if(aADCxConvertedData[0] < 3400)
 				{
-					Error_Handler();
+					CLL_OCP_FLAG = RESET;
+
+					//goto exti trigger				
+					HAL_ADC_Stop_DMA(&hadc1);
+					hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIG_EXT_IT11;
+					hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_FALLING;
+					if (HAL_ADC_Init(&hadc1) != HAL_OK)
+					{
+						Error_Handler();
+					}
+
+					ADC_TRIGGER = EXTI_TRIGGER;
+					if (HAL_ADC_Start_DMA(&hadc1,(uint32_t *)aADCxConvertedData, adc_len) != HAL_OK)
+					{
+						Error_Handler();
+					}			
 				}
-
-				ADC_TRIGGER = EXTI_TRIGGER;
-				if (HAL_ADC_Start_DMA(&hadc1,(uint32_t *)aADCxConvertedData, adc_len) != HAL_OK)
+				else
 				{
-					Error_Handler();
-				}			
-			}
-			else
-			{
-				if (HAL_ADC_Start_DMA(&hadc1,(uint32_t *)aADCxConvertedData, adc_len) != HAL_OK)
-				{
-					Error_Handler();
-				}			
+					if (HAL_ADC_Start_DMA(&hadc1,(uint32_t *)aADCxConvertedData, adc_len) != HAL_OK)
+					{
+						Error_Handler();
+					}			
+				}				
 			}
 		}
 	}
